@@ -11,6 +11,7 @@ namespace PlayerLogic
 
         private readonly Player player;
         private readonly LayerMask groundCheckLayerMask;
+        private RaycastHit lastGroundHit;
 
         public Groundable(Player player)
         {
@@ -21,7 +22,15 @@ namespace PlayerLogic
         public bool IsGrounded()
         {
             Transform cachedPlayerTransform = player.transform;
-            return UnityEngine.Physics.Raycast(cachedPlayerTransform.position, -cachedPlayerTransform.up, DistanceFromBodyCenterToGround, groundCheckLayerMask);
+            return UnityEngine.Physics.Raycast(cachedPlayerTransform.position, -cachedPlayerTransform.up, out lastGroundHit, DistanceFromBodyCenterToGround, groundCheckLayerMask);
+        }
+        
+        /// <summary>
+        /// Gets the ground collider that the player is standing on, or null if not grounded
+        /// </summary>
+        public Collider GetGroundCollider()
+        {
+            return IsGrounded() ? lastGroundHit.collider : null;
         }
     }
 }

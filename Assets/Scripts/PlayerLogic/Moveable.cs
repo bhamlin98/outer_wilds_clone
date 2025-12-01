@@ -1,3 +1,4 @@
+using Celestial;
 using UI.Debug;
 using UnityEngine;
 
@@ -29,6 +30,9 @@ namespace PlayerLogic
 
             if (groundable.IsGrounded())
             {
+                // Apply rotation coupling when grounded on a rotating planet
+                ApplyGroundedRotationCoupling();
+                
                 WalkByFoot(playerHorizontalMotion);
                 HandleJumpLogic(playerControllable);
             }
@@ -43,6 +47,55 @@ namespace PlayerLogic
             }
 
             CornerDebug.AddDebug("IsOnTheGround = " + groundable.IsGrounded());
+        }
+        
+        /// <summary>
+        /// Applies strong rotation coupling when player is grounded on a rotating planet.
+        /// This ensures the player moves with the planet's surface rotation, maintaining
+        /// their local position as the planet spins beneath them.
+        /// </summary>
+        private void ApplyGroundedRotationCoupling()
+        {
+            Collider groundCollider = groundable.GetGroundCollider();
+            if (groundCollider == null)
+            {
+                return;
+            }
+            
+            // Check if the ground is a celestial body (planet)
+            CelestialBody celestialBody = groundCollider.GetComponentInParent<CelestialBody>();
+            if (celestialBody == null)
+            {
+                return;
+            }
+            
+            // Only apply if the planet is actually rotating
+            if (Mathf.Approximately(celestialBody.angularSpeedDegrees, 0f))
+            {
+                return;
+            }
+            
+            // Calculate the tangential velocity the player should have at their current position
+            Vector3 targetTangentialVelocity = celestialBody.GetTangentialVelocityAtPosition(player.rigidbody.position);
+            
+            // Get the tangential direction (perpendicular to both radius and rotation axis)
+            Vector3 omega = celestialBody.GetAngularVelocity();
+            Vector3 radialDirection = (player.rigidbody.position - celestialBody.rigidbody.position).normalized;
+            Vector3 tangentialDirection = Vector3.Cross(omega.normalized, radialDirection).normalized;
+            
+            // Calculate how much the current velocity differs from target in the tangential direction
+            float currentTangentialSpeed = Vector3.Dot(player.rigidbody.velocity, tangentialDirection);
+            float targetTangentialSpeed = targetTangentialVelocity.magnitude * Mathf.Sign(Vector3.Dot(targetTangentialVelocity, tangentialDirection));
+            
+            // When grounded, apply strong coupling to quickly match the surface velocity
+            float speedDifference = targetTangentialSpeed - currentTangentialSpeed;
+            
+            // Use a strong coupling factor for grounded objects (much stronger than the general gravitatable coupling)
+            float groundedCouplingStrength = 10f; // Strong coupling for grounded state
+            
+            // Apply the velocity adjustment
+            Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength * Time.deltaTime;
+            player.rigidbody.velocity += velocityAdjustment;
         }
 
         private void WalkByFoot(Vector3 playerHorizontalMotion)
