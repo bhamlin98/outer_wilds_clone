@@ -94,8 +94,9 @@ namespace Physics
             float speedDifference = targetTangentialSpeed - currentTangentialSpeed;
             
             // Apply acceleration to match rotation (stronger when closer to surface)
+            // AddForce in FixedUpdate already accounts for timestep, so no Time.deltaTime needed
             Vector3 couplingForce = tangentialDirection * speedDifference * couplingStrength * rigidbody.mass;
-            rigidbody.AddForce(couplingForce * Time.deltaTime);
+            rigidbody.AddForce(couplingForce, ForceMode.Force);
         }
     }
 }

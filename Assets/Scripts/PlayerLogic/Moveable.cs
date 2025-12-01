@@ -101,7 +101,7 @@ namespace PlayerLogic
             
             // Calculate how much the current velocity differs from target in the tangential direction
             float currentTangentialSpeed = Vector3.Dot(player.rigidbody.velocity, tangentialDirection);
-            float targetTangentialSpeed = targetTangentialVelocity.magnitude * Mathf.Sign(Vector3.Dot(targetTangentialVelocity, tangentialDirection));
+            float targetTangentialSpeed = Vector3.Dot(targetTangentialVelocity, tangentialDirection);
             
             // When grounded, apply strong coupling to quickly match the surface velocity
             float speedDifference = targetTangentialSpeed - currentTangentialSpeed;
@@ -109,8 +109,8 @@ namespace PlayerLogic
             // Use a strong coupling factor for grounded objects (much stronger than the general gravitatable coupling)
             float groundedCouplingStrength = 10f; // Strong coupling for grounded state
             
-            // Apply the velocity adjustment
-            Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength * Time.deltaTime;
+            // Apply the velocity adjustment directly (instantaneous velocity change)
+            Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength * Time.fixedDeltaTime;
             player.rigidbody.velocity += velocityAdjustment;
         }
 
