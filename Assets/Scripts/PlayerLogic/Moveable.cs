@@ -106,11 +106,12 @@ namespace PlayerLogic
             // When grounded, apply strong coupling to quickly match the surface velocity
             float speedDifference = targetTangentialSpeed - currentTangentialSpeed;
             
-            // Use a strong coupling factor for grounded objects (much stronger than the general gravitatable coupling)
-            float groundedCouplingStrength = 10f; // Strong coupling for grounded state
+            // Use a strong coupling factor for grounded objects (interpolate most of the way to target)
+            // 0.5 means we close 50% of the gap per physics step, providing strong coupling while remaining stable
+            float groundedCouplingStrength = 0.5f;
             
-            // Apply the velocity adjustment directly (instantaneous velocity change)
-            Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength * Time.fixedDeltaTime;
+            // Apply the velocity adjustment as a lerp towards target velocity
+            Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength;
             player.rigidbody.velocity += velocityAdjustment;
         }
 
