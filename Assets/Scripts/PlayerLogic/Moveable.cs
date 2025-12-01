@@ -47,6 +47,22 @@ namespace PlayerLogic
             }
 
             CornerDebug.AddDebug("IsOnTheGround = " + groundable.IsGrounded());
+            
+            // Add rotation coupling debug info
+            if (groundable.IsGrounded())
+            {
+                Collider groundCollider = groundable.GetGroundCollider();
+                if (groundCollider != null)
+                {
+                    CelestialBody celestialBody = groundCollider.GetComponentInParent<CelestialBody>();
+                    if (celestialBody != null && !Mathf.Approximately(celestialBody.angularSpeedDegrees, 0f))
+                    {
+                        Vector3 tangentialVel = celestialBody.GetTangentialVelocityAtPosition(player.rigidbody.position);
+                        CornerDebug.AddDebug($"Rotating Planet: {celestialBody.name} ({celestialBody.angularSpeedDegrees:F1}°/s)");
+                        CornerDebug.AddDebug($"Surface Tangential Vel: {tangentialVel.magnitude:F2} m/s");
+                    }
+                }
+            }
         }
         
         /// <summary>

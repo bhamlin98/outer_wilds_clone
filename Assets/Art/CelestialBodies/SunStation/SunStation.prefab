@@ -82,7 +82,9 @@ MonoBehaviour:
   name: Sun Station
   radius: 2
   isStationary: 0
-  spaceBodiesGravityScale: 0.1
+  gravityScale: 0.1
+  rotationAxis: {x: 0, y: 1, z: 0}
+  angularSpeedDegrees: 5
 --- !u!23 &6689359598198128487
 MeshRenderer:
   m_ObjectHideFlags: 0

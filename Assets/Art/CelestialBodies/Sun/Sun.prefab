@@ -82,7 +82,9 @@ MonoBehaviour:
   name: Sun
   radius: 20
   isStationary: 1
-  spaceBodiesGravityScale: 1
+  gravityScale: 1
+  rotationAxis: {x: 0, y: 1, z: 0}
+  angularSpeedDegrees: 0
 --- !u!1 &4305133023043415090
 GameObject:
   m_ObjectHideFlags: 0
