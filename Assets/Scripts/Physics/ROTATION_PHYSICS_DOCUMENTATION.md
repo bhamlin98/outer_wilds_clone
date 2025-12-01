@@ -87,7 +87,7 @@ Current planet configurations:
 1. Player raycast detects ground surface
 2. `ApplyGroundedRotationCoupling()` identifies the planet
 3. Calculates target tangential velocity at player position
-4. Applies strong velocity adjustment to match surface motion
+4. Applies strong velocity adjustment (0.5 interpolation factor - closes 50% of gap per physics step)
 5. Player maintains approximate local position as planet rotates beneath them
 
 ### When Airborne Near Rotating Planet
@@ -116,9 +116,9 @@ Current planet configurations:
 
 ### Grounded Coupling Strength (Moveable.cs)
 ```csharp
-float groundedCouplingStrength = 10f;
+float groundedCouplingStrength = 0.5f;
 ```
-Higher values = faster matching of surface velocity when grounded
+Interpolation factor (0.0 to 1.0) - how much of the velocity gap to close per physics step. Higher values = faster matching of surface velocity when grounded. 0.5 closes 50% of the gap per step, providing strong coupling while remaining stable.
 
 ### Airborne Coupling Radius (Gravitatable.cs)
 ```csharp
