@@ -74,8 +74,13 @@ namespace Physics
 
             // Apply a distance-based coupling strength
             // Stronger near surface (1.0), weaker far away (0.0)
-            float distanceRatio = (distanceFromCenter - dominantCelestialBody.radius) / dominantCelestialBody.radius;
-            float couplingStrength = Mathf.Clamp01(1f - distanceRatio);
+            // Guard against division by zero
+            float couplingStrength = 0f;
+            if (dominantCelestialBody.radius > 0f)
+            {
+                float distanceRatio = (distanceFromCenter - dominantCelestialBody.radius) / dominantCelestialBody.radius;
+                couplingStrength = Mathf.Clamp01(1f - distanceRatio);
+            }
 
             // For airborne objects, use a moderate coupling factor (0.1 = 10% per frame)
             // This is gentle enough to allow orbital mechanics but strong enough to feel rotation
@@ -89,6 +94,7 @@ namespace Physics
         /// <summary>
         /// Initializes the object's velocity to match the tangential velocity at spawn position.
         /// This prevents objects from being thrown away when they spawn on or near rotating planets.
+        /// Only adds tangential velocity if the object doesn't already have it.
         /// </summary>
         private void InitializeVelocityForRotation(CelestialBody celestialBody)
         {
@@ -105,9 +111,22 @@ namespace Physics
                 return;
             }
 
-            // Add the tangential velocity to current velocity
-            Vector3 tangentialVelocity = celestialBody.GetTangentialVelocityAtPosition(rigidbody.position);
-            rigidbody.velocity += tangentialVelocity;
+            // Calculate target tangential velocity
+            Vector3 targetTangentialVelocity = celestialBody.GetTangentialVelocityAtPosition(rigidbody.position);
+            
+            // Get current tangential component
+            Vector3 omega = celestialBody.GetAngularVelocity();
+            Vector3 radialDirection = (rigidbody.position - celestialBody.rigidbody.position).normalized;
+            Vector3 tangentialDirection = Vector3.Cross(omega.normalized, radialDirection).normalized;
+            float currentTangentialSpeed = Vector3.Dot(rigidbody.velocity, tangentialDirection);
+            float targetTangentialSpeed = Vector3.Dot(targetTangentialVelocity, tangentialDirection);
+            
+            // Only add if significantly different (more than 10% off)
+            float speedDifference = Mathf.Abs(targetTangentialSpeed - currentTangentialSpeed);
+            if (speedDifference > Mathf.Abs(targetTangentialSpeed) * 0.1f)
+            {
+                rigidbody.velocity += targetTangentialVelocity;
+            }
         }
     }
 }
