@@ -15,6 +15,7 @@ namespace Physics
 
         private readonly CelestialBody[] celestialBodies;
         private MaxGravitatableInfo maxGravitatableInfo;
+        private bool hasInitializedRotationVelocity = false;
 
         public Gravitatable(Rigidbody rigidbody, CelestialBody[] celestialBodies, bool isCelestialBody = false, bool applyRotationCoupling = true)
         {
@@ -43,6 +44,13 @@ namespace Physics
                 CornerDebug.AddGravityDebug(celestialBody.name, $"'{celestialBody.name}' gravity magnitude: {gravityForce.magnitude}");
             }
             
+            // Initialize rotation velocity on first update if we're near a rotating planet
+            if (applyRotationCoupling && !hasInitializedRotationVelocity && maxGravitatableInfo.CelestialBody != null)
+            {
+                InitializeRotationVelocity(maxGravitatableInfo.CelestialBody);
+                hasInitializedRotationVelocity = true;
+            }
+            
             // Apply rotation coupling if enabled and we have a dominant celestial body
             if (applyRotationCoupling && maxGravitatableInfo.CelestialBody != null)
             {
@@ -50,6 +58,40 @@ namespace Physics
             }
 
             return maxGravitatableInfo;
+        }
+        
+        /// <summary>
+        /// Initializes the object's velocity to match the tangential velocity of a rotating planet.
+        /// This is called once on the first physics update to prevent objects from being thrown away
+        /// when they spawn near a rotating planet.
+        /// </summary>
+        private void InitializeRotationVelocity(CelestialBody celestialBody)
+        {
+            // Only initialize if the planet is actually rotating
+            if (Mathf.Approximately(celestialBody.angularSpeedDegrees, 0f))
+            {
+                return;
+            }
+            
+            // Only apply if object is near the planet surface
+            Vector3 toBody = celestialBody.rigidbody.position - rigidbody.position;
+            float distanceFromCenter = toBody.magnitude;
+            
+            // Only initialize within reasonable range (2x radius)
+            float couplingRadius = celestialBody.radius * 2f;
+            if (distanceFromCenter > couplingRadius)
+            {
+                return;
+            }
+            
+            // Calculate the tangential velocity at the object's spawn position
+            Vector3 tangentialVelocity = celestialBody.GetTangentialVelocityAtPosition(rigidbody.position);
+            
+            // Add the tangential velocity to the object's current velocity
+            // This ensures objects spawn with the correct velocity for their position
+            rigidbody.velocity += tangentialVelocity;
+            
+            CornerDebug.AddDebug($"Initialized velocity with tangential: {tangentialVelocity.magnitude:F2} m/s");
         }
         
         /// <summary>
