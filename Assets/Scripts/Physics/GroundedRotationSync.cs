@@ -70,7 +70,7 @@ namespace Physics
 
         private void SyncRotation(CelestialBody groundedBody)
         {
-            // Calculate the rotation that occurred this frame
+            // Calculate the rotation delta between last frame and current frame
             Quaternion rotationDelta = groundedBody.transform.rotation * Quaternion.Inverse(lastBodyRotation);
             
             // Rotate the player around the planet's center by the same amount the planet rotated
@@ -84,8 +84,8 @@ namespace Physics
             // Rotate the player's velocity by the same rotation
             rigidbody.velocity = rotationDelta * rigidbody.velocity;
             
-            // Update tracking for next frame
-            lastLocalPosition = groundedBody.transform.InverseTransformPoint(newPosition);
+            // Update tracking for next frame using the actual transform position after MovePosition
+            lastLocalPosition = groundedBody.transform.InverseTransformPoint(rigidbody.position);
             lastBodyRotation = groundedBody.transform.rotation;
         }
 
