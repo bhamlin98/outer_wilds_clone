@@ -57,7 +57,7 @@ namespace Celestial
             }
 
             // Calculate rotation angle for this frame
-            float rotationAngle = angularVelocity * Time.deltaTime;
+            float rotationAngle = angularVelocity * Time.fixedDeltaTime;
             
             // Apply rotation around the specified axis
             Quaternion deltaRotation = Quaternion.AngleAxis(rotationAngle, rotationAxis.normalized);

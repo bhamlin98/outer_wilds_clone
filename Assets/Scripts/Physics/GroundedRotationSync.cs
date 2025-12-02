@@ -77,7 +77,7 @@ namespace Physics
             
             // Calculate the velocity change needed to move to the new position
             Vector3 positionDelta = newWorldPosition - transform.position;
-            Vector3 velocityCorrection = positionDelta / Time.deltaTime;
+            Vector3 velocityCorrection = positionDelta / Time.fixedDeltaTime;
             
             // Apply velocity correction to maintain position on rotating surface
             rigidbody.velocity += velocityCorrection;
@@ -115,9 +115,9 @@ namespace Physics
             // Direction is from object toward the rotation axis (inward)
             Vector3 centripetalDirection = -radialVector.normalized;
             
-            // Apply centripetal force
+            // Apply centripetal force (AddForce already handles time scaling in FixedUpdate)
             Vector3 centripetalForce = centripetalDirection * centripetalAcceleration * rigidbody.mass;
-            rigidbody.AddForce(centripetalForce * Time.deltaTime);
+            rigidbody.AddForce(centripetalForce);
         }
     }
 }
