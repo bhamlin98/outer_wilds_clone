@@ -5,7 +5,8 @@ namespace Physics
 {
     /**
      * Component that synchronizes grounded objects with rotating planet surfaces.
-     * Handles position, velocity, and centripetal force to keep objects attached to rotating surfaces.
+     * Rotates the object's position and velocity around the planet's center to maintain
+     * attachment to the rotating surface.
      */
     public class GroundedRotationSync
     {
@@ -69,55 +70,25 @@ namespace Physics
 
         private void SyncRotation(CelestialBody groundedBody)
         {
-            // Calculate how much the body has rotated since last frame
+            // Calculate the rotation that occurred this frame
             Quaternion rotationDelta = groundedBody.transform.rotation * Quaternion.Inverse(lastBodyRotation);
             
-            // Transform the local position by the rotation delta to get new world position
-            Vector3 newWorldPosition = groundedBody.transform.TransformPoint(lastLocalPosition);
+            // Rotate the player around the planet's center by the same amount the planet rotated
+            Vector3 toPlayer = transform.position - groundedBody.transform.position;
+            Vector3 rotatedOffset = rotationDelta * toPlayer;
+            Vector3 newPosition = groundedBody.transform.position + rotatedOffset;
             
-            // Calculate the velocity change needed to move to the new position
-            Vector3 positionDelta = newWorldPosition - transform.position;
-            Vector3 velocityCorrection = positionDelta / Time.fixedDeltaTime;
+            // Move the player to the new position
+            rigidbody.MovePosition(newPosition);
             
-            // Apply velocity correction to maintain position on rotating surface
-            rigidbody.velocity += velocityCorrection;
-            
-            // Apply centripetal force to keep object rooted during rotation
-            ApplyCentripetalForce(groundedBody);
+            // Rotate the player's velocity by the same rotation
+            rigidbody.velocity = rotationDelta * rigidbody.velocity;
             
             // Update tracking for next frame
-            lastLocalPosition = groundedBody.transform.InverseTransformPoint(transform.position);
+            lastLocalPosition = groundedBody.transform.InverseTransformPoint(newPosition);
             lastBodyRotation = groundedBody.transform.rotation;
         }
 
-        private void ApplyCentripetalForce(CelestialBody groundedBody)
-        {
-            // Calculate distance from rotation axis
-            Vector3 bodyToObject = transform.position - groundedBody.transform.position;
-            Vector3 rotationAxisNormalized = groundedBody.rotationAxis.normalized;
-            
-            // Project the vector onto the plane perpendicular to the rotation axis
-            Vector3 radialVector = bodyToObject - Vector3.Project(bodyToObject, rotationAxisNormalized);
-            float radius = radialVector.magnitude;
-            
-            if (radius < 0.01f)
-            {
-                // Too close to the axis, no centripetal force needed
-                return;
-            }
-            
-            // Calculate angular velocity in radians per second
-            float angularVelocityRad = groundedBody.angularVelocity * Mathf.Deg2Rad;
-            
-            // Centripetal acceleration = ω² * r, directed toward the axis
-            float centripetalAcceleration = angularVelocityRad * angularVelocityRad * radius;
-            
-            // Direction is from object toward the rotation axis (inward)
-            Vector3 centripetalDirection = -radialVector.normalized;
-            
-            // Apply centripetal force (AddForce already handles time scaling in FixedUpdate)
-            Vector3 centripetalForce = centripetalDirection * centripetalAcceleration * rigidbody.mass;
-            rigidbody.AddForce(centripetalForce);
-        }
+
     }
 }
