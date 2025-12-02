@@ -34,6 +34,7 @@ namespace PlayerLogic
         public Dieable Dieable;
         private Gravitatable gravitatable;
         private TowardsCelestialBodyRotatable towardsCelestialBodyRotatable;
+        private PlanetaryRotationCoupler planetaryRotationCoupler;
         public BuckledUppable BuckledUppable;
 
         public new void Awake()
@@ -53,6 +54,7 @@ namespace PlayerLogic
             rotatable = new Rotatable();
             gravitatable = new Gravitatable(rigidbody, FindObjectsOfType<CelestialBody>().ToArray());
             towardsCelestialBodyRotatable = new TowardsCelestialBodyRotatable(rigidbody);
+            planetaryRotationCoupler = new PlanetaryRotationCoupler(rigidbody);
             Damageable = new Damageable(100f);
             Dieable = new Dieable();
             BuckledUppable = new BuckledUppable(this);
@@ -93,6 +95,10 @@ namespace PlayerLogic
             }
 
             moveable.Move(playerControllable);
+            
+            // Apply rotation coupling for airborne player near rotating planets
+            // (Grounded rotation coupling is handled in Moveable)
+            planetaryRotationCoupler.ApplyRotationCoupling(maxGravitatableInfo.CelestialBody, moveable.IsGrounded());
 
             if (!BuckledUppable.IsBuckledUp())
             {

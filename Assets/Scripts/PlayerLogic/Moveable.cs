@@ -22,6 +22,11 @@ namespace PlayerLogic
             jumpable = new Jumpable(player);
         }
 
+        public bool IsGrounded()
+        {
+            return groundable.IsGrounded();
+        }
+
         public void Move(PlayerControllable playerControllable)
         {
             Vector3 playerVerticalMotion = player.transform.up * playerControllable.movement.y;
@@ -47,28 +52,13 @@ namespace PlayerLogic
             }
 
             CornerDebug.AddDebug("IsOnTheGround = " + groundable.IsGrounded());
-            
-            // Add rotation coupling debug info
-            if (groundable.IsGrounded())
-            {
-                Collider groundCollider = groundable.GetGroundCollider();
-                if (groundCollider != null)
-                {
-                    CelestialBody celestialBody = groundCollider.GetComponentInParent<CelestialBody>();
-                    if (celestialBody != null && !Mathf.Approximately(celestialBody.angularSpeedDegrees, 0f))
-                    {
-                        Vector3 tangentialVel = celestialBody.GetTangentialVelocityAtPosition(player.rigidbody.position);
-                        CornerDebug.AddDebug($"Rotating Planet: {celestialBody.name} ({celestialBody.angularSpeedDegrees:F1}°/s)");
-                        CornerDebug.AddDebug($"Surface Tangential Vel: {tangentialVel.magnitude:F2} m/s");
-                    }
-                }
-            }
         }
         
         /// <summary>
-        /// Applies strong rotation coupling when player is grounded on a rotating planet.
-        /// This ensures the player moves with the planet's surface rotation, maintaining
-        /// their local position as the planet spins beneath them.
+        /// Applies rotation coupling when player is grounded on a rotating planet.
+        /// This directly sets the player's velocity to match the planet's surface rotation,
+        /// ensuring the player moves with the planet as it rotates.
+        /// Physics: v_tangent = ω × r, where ω is angular velocity and r is position from center
         /// </summary>
         private void ApplyGroundedRotationCoupling()
         {
@@ -91,7 +81,8 @@ namespace PlayerLogic
                 return;
             }
             
-            // Calculate the tangential velocity the player should have at their current position
+            // Calculate what the player's tangential velocity should be at this position
+            // This is the velocity needed to co-rotate with the planet's surface
             Vector3 targetTangentialVelocity = celestialBody.GetTangentialVelocityAtPosition(player.rigidbody.position);
             
             // Get the tangential direction (perpendicular to both radius and rotation axis)
@@ -99,20 +90,15 @@ namespace PlayerLogic
             Vector3 radialDirection = (player.rigidbody.position - celestialBody.rigidbody.position).normalized;
             Vector3 tangentialDirection = Vector3.Cross(omega.normalized, radialDirection).normalized;
             
-            // Calculate how much the current velocity differs from target in the tangential direction
+            // Decompose current velocity into tangential and non-tangential components
             float currentTangentialSpeed = Vector3.Dot(player.rigidbody.velocity, tangentialDirection);
-            float targetTangentialSpeed = Vector3.Dot(targetTangentialVelocity, tangentialDirection);
+            Vector3 currentTangentialVelocity = tangentialDirection * currentTangentialSpeed;
+            Vector3 nonTangentialVelocity = player.rigidbody.velocity - currentTangentialVelocity;
             
-            // When grounded, apply strong coupling to quickly match the surface velocity
-            float speedDifference = targetTangentialSpeed - currentTangentialSpeed;
-            
-            // Use a strong coupling factor for grounded objects (interpolate most of the way to target)
-            // 0.5 means we close 50% of the gap per physics step, providing strong coupling while remaining stable
-            float groundedCouplingStrength = 0.5f;
-            
-            // Apply the velocity adjustment as a lerp towards target velocity
-            Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength;
-            player.rigidbody.velocity += velocityAdjustment;
+            // When grounded, we want to completely replace the tangential component with the planet's
+            // This simulates friction locking the player to the rotating surface
+            // The non-tangential components (radial, walking movement) are preserved
+            player.rigidbody.velocity = nonTangentialVelocity + targetTangentialVelocity;
         }
 
         private void WalkByFoot(Vector3 playerHorizontalMotion)

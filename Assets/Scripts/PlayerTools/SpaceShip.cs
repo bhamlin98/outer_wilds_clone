@@ -23,6 +23,7 @@ namespace PlayerTools
         // Humble object components
         private Gravitatable gravitatable;
         private TowardsCelestialBodyRotatable towardsCelestialBodyRotatable;
+        private PlanetaryRotationCoupler planetaryRotationCoupler;
 
         private new void Awake()
         {
@@ -32,12 +33,17 @@ namespace PlayerTools
 
             gravitatable = new Gravitatable(rigidbody, FindObjectsOfType<CelestialBody>().ToArray());
             towardsCelestialBodyRotatable = new TowardsCelestialBodyRotatable(rigidbody);
+            planetaryRotationCoupler = new PlanetaryRotationCoupler(rigidbody);
         }
 
         private void FixedUpdate()
         {
             MaxGravitatableInfo maxGravitatableInfo = gravitatable.ApplyGravity();
             towardsCelestialBodyRotatable.RotateIfNeeded(maxGravitatableInfo);
+            
+            // Apply rotation coupling for ship near rotating planets
+            // Ships are never "grounded" in the traditional sense, so always pass false
+            planetaryRotationCoupler.ApplyRotationCoupling(maxGravitatableInfo.CelestialBody, false);
         }
     }
 }
