@@ -34,6 +34,7 @@ namespace PlayerLogic
         public Dieable Dieable;
         private Gravitatable gravitatable;
         private TowardsCelestialBodyRotatable towardsCelestialBodyRotatable;
+        private GroundedRotationSync groundedRotationSync;
         public BuckledUppable BuckledUppable;
 
         public new void Awake()
@@ -53,6 +54,7 @@ namespace PlayerLogic
             rotatable = new Rotatable();
             gravitatable = new Gravitatable(rigidbody, FindObjectsOfType<CelestialBody>().ToArray());
             towardsCelestialBodyRotatable = new TowardsCelestialBodyRotatable(rigidbody);
+            groundedRotationSync = new GroundedRotationSync(rigidbody, transform);
             Damageable = new Damageable(100f);
             Dieable = new Dieable();
             BuckledUppable = new BuckledUppable(this);
@@ -93,6 +95,12 @@ namespace PlayerLogic
             }
 
             moveable.Move(playerControllable);
+
+            // Sync with rotating planet surface if grounded
+            Groundable groundable = moveable.GetGroundable();
+            bool isGrounded = groundable.IsGrounded();
+            CelestialBody groundedBody = groundable.GetGroundedBody();
+            groundedRotationSync.SyncWithRotatingSurface(isGrounded, groundedBody);
 
             if (!BuckledUppable.IsBuckledUp())
             {

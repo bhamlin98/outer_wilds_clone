@@ -1,3 +1,4 @@
+using Celestial;
 using UnityEngine;
 
 namespace PlayerLogic
@@ -11,6 +12,7 @@ namespace PlayerLogic
 
         private readonly Player player;
         private readonly LayerMask groundCheckLayerMask;
+        private CelestialBody groundedBody;
 
         public Groundable(Player player)
         {
@@ -21,7 +23,25 @@ namespace PlayerLogic
         public bool IsGrounded()
         {
             Transform cachedPlayerTransform = player.transform;
-            return UnityEngine.Physics.Raycast(cachedPlayerTransform.position, -cachedPlayerTransform.up, DistanceFromBodyCenterToGround, groundCheckLayerMask);
+            RaycastHit hit;
+            bool isGrounded = UnityEngine.Physics.Raycast(cachedPlayerTransform.position, -cachedPlayerTransform.up, out hit, DistanceFromBodyCenterToGround, groundCheckLayerMask);
+            
+            if (isGrounded)
+            {
+                // Try to get the CelestialBody component from the hit object or its parents
+                groundedBody = hit.collider.GetComponentInParent<CelestialBody>();
+            }
+            else
+            {
+                groundedBody = null;
+            }
+            
+            return isGrounded;
+        }
+
+        public CelestialBody GetGroundedBody()
+        {
+            return groundedBody;
         }
     }
 }
