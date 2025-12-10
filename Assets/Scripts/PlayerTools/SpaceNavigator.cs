@@ -242,7 +242,7 @@ namespace PlayerTools
 
         private void UpdateVelocityArrows()
         {
-            Vector3 velocityDifference = player.rigidbody.velocity - lockedCelestialBody.rigidbody.velocity;
+            Vector3 velocityDifference = player.rigidbody.linearVelocity - lockedCelestialBody.rigidbody.linearVelocity;
 
             Vector3 playerEulerAngles = player.transform.rotation.eulerAngles;
             velocityDifference = Quaternion.Euler(0, 0, -playerEulerAngles.z) * velocityDifference;
@@ -282,7 +282,7 @@ namespace PlayerTools
 
         private string GetVelocityMagnitudeToCelestialBodyText()
         {
-            float velocityToCelestialBody = (player.rigidbody.velocity - lockedCelestialBody.rigidbody.velocity).magnitude;
+            float velocityToCelestialBody = (player.rigidbody.linearVelocity - lockedCelestialBody.rigidbody.linearVelocity).magnitude;
 
             float currentDistance = (player.rigidbody.position - lockedCelestialBody.rigidbody.position).magnitude;
             string velocitySign = previousDistance < currentDistance ? "-" : "";

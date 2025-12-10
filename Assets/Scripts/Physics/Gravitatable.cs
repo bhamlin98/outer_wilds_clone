@@ -85,7 +85,7 @@ namespace Physics
             Vector3 radialDirection = (rigidbody.position - celestialBody.rigidbody.position).normalized;
             Vector3 tangentialDirection = Vector3.Cross(omega.normalized, radialDirection).normalized;
             
-            float currentTangentialSpeed = Vector3.Dot(rigidbody.velocity, tangentialDirection);
+            float currentTangentialSpeed = Vector3.Dot(rigidbody.linearVelocity, tangentialDirection);
             float targetTangentialSpeed = Vector3.Dot(targetTangentialVelocity, tangentialDirection);
             
             // Apply a force to gradually match the planet's rotation

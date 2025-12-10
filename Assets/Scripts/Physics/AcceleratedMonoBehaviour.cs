@@ -13,7 +13,7 @@ namespace Physics
         protected void Awake()
         {
             Rigidbody monoBehaviourRigidbody = GetComponent<Rigidbody>();
-            monoBehaviourRigidbody.velocity = initialVelocity;
+            monoBehaviourRigidbody.linearVelocity = initialVelocity;
         }
     }
 }

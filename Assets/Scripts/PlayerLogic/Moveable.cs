@@ -100,7 +100,7 @@ namespace PlayerLogic
             Vector3 tangentialDirection = Vector3.Cross(omega.normalized, radialDirection).normalized;
             
             // Calculate how much the current velocity differs from target in the tangential direction
-            float currentTangentialSpeed = Vector3.Dot(player.rigidbody.velocity, tangentialDirection);
+            float currentTangentialSpeed = Vector3.Dot(player.rigidbody.linearVelocity, tangentialDirection);
             float targetTangentialSpeed = Vector3.Dot(targetTangentialVelocity, tangentialDirection);
             
             // When grounded, apply strong coupling to quickly match the surface velocity
@@ -112,7 +112,7 @@ namespace PlayerLogic
             
             // Apply the velocity adjustment as a lerp towards target velocity
             Vector3 velocityAdjustment = tangentialDirection * speedDifference * groundedCouplingStrength;
-            player.rigidbody.velocity += velocityAdjustment;
+            player.rigidbody.linearVelocity += velocityAdjustment;
         }
 
         private void WalkByFoot(Vector3 playerHorizontalMotion)

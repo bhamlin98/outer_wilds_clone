@@ -31,7 +31,7 @@ namespace PlayerLogic
 
         public void Unlock(Vector3 newVelocity)
         {
-            player.rigidbody.velocity = newVelocity;
+            player.rigidbody.linearVelocity = newVelocity;
             player.rigidbody.isKinematic = false;
             player.rigidbody.detectCollisions = true;
             player.transform.SetParent(null);
