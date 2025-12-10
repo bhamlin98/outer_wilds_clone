@@ -39,7 +39,7 @@ namespace PlayerTools.SpaceShipParts
 
         public void Unbuckle()
         {
-            playerLockable.Unlock(spaceShip.rigidbody.velocity);
+            playerLockable.Unlock(spaceShip.rigidbody.linearVelocity);
             seatedPlayer = null;
         }
     }

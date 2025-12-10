@@ -51,7 +51,7 @@ namespace PlayerLogic
         public void StopCooking()
         {
             CelestialBody celestialBody = campfire.GetComponentInParent<CelestialBody>();
-            playerLockable.Unlock(celestialBody.rigidbody.velocity);
+            playerLockable.Unlock(celestialBody.rigidbody.linearVelocity);
 
             campfire = null;
             marshmallowStick.SetActive(false);
@@ -105,7 +105,7 @@ namespace PlayerLogic
 
         public void ThrowBurnedMarshmallow()
         {
-            marshmallow.rigidbody.velocity = ComputeThrownMarshmallowVelocity();
+            marshmallow.rigidbody.linearVelocity = ComputeThrownMarshmallowVelocity();
             marshmallow.rigidbody.isKinematic = false;
             marshmallow.collider.isTrigger = false;
             marshmallow.transform.SetParent(null);
@@ -119,7 +119,7 @@ namespace PlayerLogic
             CelestialBody parentCelestialBodyWithVelocity = player.GetComponentInParent<CelestialBody>();
             Vector3 pushVelocity = marshmallow.transform.forward * 5f + marshmallow.transform.up * 2f;
 
-            return parentCelestialBodyWithVelocity.rigidbody.velocity + pushVelocity;
+            return parentCelestialBodyWithVelocity.rigidbody.linearVelocity + pushVelocity;
         }
 
         public void EatMarshmallow()
