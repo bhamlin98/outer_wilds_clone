@@ -21,6 +21,11 @@ namespace PlayerLogic
             jumpable = new Jumpable(player);
         }
 
+        public Groundable GetGroundable()
+        {
+            return groundable;
+        }
+
         public void Move(PlayerControllable playerControllable)
         {
             Vector3 playerVerticalMotion = player.transform.up * playerControllable.movement.y;

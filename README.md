@@ -4,3 +4,10 @@ Clone of the most beautiful game I have ever played
 There's a [video](https://www.youtube.com/watch?v=SIEFhYCTUEk) about the development process
 
 ![promo image](https://github.com/NikitaShkaruba/outer_wilds_clone/blob/master/Assets/Art/Promo/github_readme_md_promo_3.png)
+
+## Features
+
+### Planet Axial Rotation
+Planets can now rotate around a configurable axis with realistic physics simulation. Objects grounded on rotating planets remain attached to the surface through position synchronization and centripetal force calculations.
+
+See [Assets/Scripts/Documentation/PlanetRotation.md](Assets/Scripts/Documentation/PlanetRotation.md) for detailed documentation on the rotation system.
